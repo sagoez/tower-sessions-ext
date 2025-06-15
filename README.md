@@ -62,7 +62,7 @@ useful starting points.
 
 | Crate                                                                                                            | Persistent | Description                                                 |
 | ---------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------- |
-| [`tower-sessions-ext-sqlx-store`](https://github.com/maxcountryman/tower-sessions-ext-stores/tree/main/sqlx-store)       | Yes        | SQLite, Postgres, and MySQL session stores                  |
+| [`tower-sessions-ext-sqlx-store`](https://github.com/sagoez/tower-sessions-ext-stores/tree/main/sqlx-store)       | Yes        | SQLite, Postgres, and MySQL session stores                  |
 
 Have a store to add? Please open a PR adding it.
 
