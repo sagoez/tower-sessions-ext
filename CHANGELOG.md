@@ -1,5 +1,8 @@
 # Unreleased
 
+# 0.15.0
+- Reduce log levels from info to debug for library calls
+
 # 0.14.0
 
 - Update axum-core to v0.5.0. #231

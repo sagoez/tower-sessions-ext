@@ -6,18 +6,18 @@ use std::{
     result,
     str::{self, FromStr},
     sync::{
-        atomic::{self, AtomicBool},
         Arc,
+        atomic::{self, AtomicBool},
     },
 };
 
-use base64::{engine::general_purpose::URL_SAFE_NO_PAD, DecodeError, Engine as _};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use base64::{DecodeError, Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::Value;
 use time::{Duration, OffsetDateTime};
 use tokio::sync::{MappedMutexGuard, Mutex, MutexGuard};
 
-use crate::{session_store, SessionStore};
+use crate::{SessionStore, session_store};
 
 const DEFAULT_DURATION: Duration = Duration::weeks(2);
 
@@ -104,7 +104,7 @@ impl Session {
         Record::new(self.expiry_date())
     }
 
-    #[tracing::instrument(skip(self), err)]
+    #[tracing::instrument(skip(self), err, level = "trace")]
     async fn get_record(&self) -> Result<MappedMutexGuard<Record>> {
         let mut record_guard = self.inner.record.lock().await;
 
@@ -420,7 +420,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions_ext::{session::Id, MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session, session::Id};
     ///
     /// let store = Arc::new(MemoryStore::default());
     ///
@@ -486,7 +486,7 @@ impl Session {
     /// ```rust
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions_ext::{session::Id, MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session, session::Id};
     ///
     /// let store = Arc::new(MemoryStore::default());
     ///
@@ -508,7 +508,7 @@ impl Session {
     /// ```rust
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions_ext::{session::Expiry, MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session, session::Expiry};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -530,7 +530,7 @@ impl Session {
     /// use std::sync::Arc;
     ///
     /// use time::OffsetDateTime;
-    /// use tower_sessions_ext::{session::Expiry, MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session, session::Expiry};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -661,7 +661,7 @@ impl Session {
     /// # Errors
     ///
     /// - If saving to the store fails, we fail with [`Error::Store`].
-    #[tracing::instrument(skip(self), err)]
+    #[tracing::instrument(skip(self), err, level = "trace")]
     pub async fn save(&self) -> Result<()> {
         let mut record_guard = self.get_record().await?;
         record_guard.expiry_date = self.expiry_date();
@@ -694,7 +694,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions_ext::{session::Id, MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session, session::Id};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let id = Some(Id::default());
@@ -713,7 +713,7 @@ impl Session {
     /// # Errors
     ///
     /// - If loading from the store fails, we fail with [`Error::Store`].
-    #[tracing::instrument(skip(self), err)]
+    #[tracing::instrument(skip(self), err, level = "trace")]
     pub async fn load(&self) -> Result<()> {
         let session_id = *self.inner.session_id.lock();
         let Some(ref id) = session_id else {
@@ -734,7 +734,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions_ext::{session::Id, MemoryStore, Session, SessionStore};
+    /// use tower_sessions_ext::{MemoryStore, Session, SessionStore, session::Id};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(Some(Id::default()), store.clone(), None);
@@ -752,7 +752,7 @@ impl Session {
     /// # Errors
     ///
     /// - If deleting from the store fails, we fail with [`Error::Store`].
-    #[tracing::instrument(skip(self), err)]
+    #[tracing::instrument(skip(self), err, level = "trace")]
     pub async fn delete(&self) -> Result<()> {
         let session_id = *self.inner.session_id.lock();
         let Some(ref session_id) = session_id else {
@@ -812,7 +812,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions_ext::{session::Id, MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session, session::Id};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store.clone(), None);
@@ -846,7 +846,7 @@ impl Session {
         let old_session_id = record_guard.id;
         record_guard.id = Id::default();
         *self.inner.session_id.lock() = None; // Setting `None` ensures `save` invokes the store's
-                                              // `create` method.
+        // `create` method.
 
         self.store
             .delete(&old_session_id)
@@ -874,7 +874,7 @@ impl Session {
 /// ```
 #[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, Hash, PartialEq)]
 pub struct Id(pub i128); // TODO: By this being public, it may be possible to override the
-                         // session ID, which is undesirable.
+// session ID, which is undesirable.
 
 impl Default for Id {
     fn default() -> Self {
