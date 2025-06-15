@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use async_trait::async_trait;
 use time::OffsetDateTime;
 use tokio::sync::Mutex;
-use tower_sessions_core::{
+use tower_sessions_ext_core::{
     session::{Id, Record},
     session_store, SessionStore,
 };
@@ -15,7 +15,7 @@ use tower_sessions_core::{
 /// # Examples
 ///
 /// ```rust
-/// use tower_sessions::MemoryStore;
+/// use tower_sessions_ext::MemoryStore;
 /// MemoryStore::default();
 /// ```
 #[derive(Clone, Debug, Default)]

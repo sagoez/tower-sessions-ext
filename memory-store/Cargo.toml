@@ -1,6 +1,6 @@
 [package]
-name = "tower-sessions-memory-store"
-description = "Memory session store. Not for direct use; see the `tower-sessions` crate for details."
+name = "tower-sessions-ext-memory-store"
+description = "Memory session store. Not for direct use; see the `tower-sessions-ext` crate for details."
 documentation.workspace = true
 version.workspace = true
 license.workspace = true
@@ -9,10 +9,10 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-tower-sessions-core = { workspace = true }
+tower-sessions-ext-core = { workspace = true }
 async-trait = { workspace = true }
 time = { workspace = true }
 tokio = { workspace = true }
 
 [dev-dependencies]
-tower-sessions = { path = "../" }
+tower-sessions-ext = { path = "../" }

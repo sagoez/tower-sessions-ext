@@ -11,14 +11,14 @@ use http::{Request, Response};
 use time::OffsetDateTime;
 #[cfg(any(feature = "signed", feature = "private"))]
 use tower_cookies::Key;
-use tower_cookies::{cookie::SameSite, Cookie, CookieManager, Cookies};
+use tower_cookies::{Cookie, CookieManager, Cookies, cookie::SameSite};
 use tower_layer::Layer;
 use tower_service::Service;
 use tracing::Instrument;
 
 use crate::{
-    session::{self, Expiry},
     Session, SessionStore,
+    session::{self, Expiry},
 };
 
 #[doc(hidden)]
@@ -180,7 +180,7 @@ where
     }
 
     fn call(&mut self, mut req: Request<ReqBody>) -> Self::Future {
-        let span = tracing::info_span!("call");
+        let span = tracing::debug_span!("call");
 
         let session_store = self.session_store.clone();
         let session_config = self.session_config.clone();
@@ -301,7 +301,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// # Examples
     ///
     /// ```rust
-    /// use tower_sessions::{MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer};
     ///
     /// let session_store = MemoryStore::default();
     /// let session_service = SessionManagerLayer::new(session_store).with_name("my.sid");
@@ -323,7 +323,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// # Examples
     ///
     /// ```rust
-    /// use tower_sessions::{MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer};
     ///
     /// let session_store = MemoryStore::default();
     /// let session_service = SessionManagerLayer::new(session_store).with_http_only(true);
@@ -340,7 +340,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// # Examples
     ///
     /// ```rust
-    /// use tower_sessions::{cookie::SameSite, MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer, cookie::SameSite};
     ///
     /// let session_store = MemoryStore::default();
     /// let session_service = SessionManagerLayer::new(session_store).with_same_site(SameSite::Lax);
@@ -357,7 +357,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     ///
     /// ```rust
     /// use time::Duration;
-    /// use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{Expiry, MemoryStore, SessionManagerLayer};
     ///
     /// let session_store = MemoryStore::default();
     /// let session_expiry = Expiry::OnInactivity(Duration::hours(1));
@@ -374,7 +374,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// # Examples
     ///
     /// ```rust
-    /// use tower_sessions::{MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer};
     ///
     /// let session_store = MemoryStore::default();
     /// let session_service = SessionManagerLayer::new(session_store).with_secure(true);
@@ -390,7 +390,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// # Examples
     ///
     /// ```rust
-    /// use tower_sessions::{MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer};
     ///
     /// let session_store = MemoryStore::default();
     /// let session_service = SessionManagerLayer::new(session_store).with_path("/some/path");
@@ -406,7 +406,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// # Examples
     ///
     /// ```rust
-    /// use tower_sessions::{MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer};
     ///
     /// let session_store = MemoryStore::default();
     /// let session_service = SessionManagerLayer::new(session_store).with_domain("localhost");
@@ -434,7 +434,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     ///
     /// ```rust
     /// use time::Duration;
-    /// use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{Expiry, MemoryStore, SessionManagerLayer};
     ///
     /// let session_store = MemoryStore::default();
     /// let session_expiry = Expiry::OnInactivity(Duration::hours(1));
@@ -452,7 +452,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// See [`SignedCookies`](tower_cookies::SignedCookies).
     ///
     /// ```rust
-    /// use tower_sessions::{cookie::Key, MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer, cookie::Key};
     ///
     /// # /*
     /// let key = { /* a cryptographically random key >= 64 bytes */ };
@@ -478,7 +478,7 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// See [`PrivateCookies`](tower_cookies::PrivateCookies).
     ///
     /// ```rust
-    /// use tower_sessions::{cookie::Key, MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer, cookie::Key};
     ///
     /// # /*
     /// let key = { /* a cryptographically random key >= 64 bytes */ };
@@ -507,7 +507,7 @@ impl<Store: SessionStore> SessionManagerLayer<Store> {
     /// # Examples
     ///
     /// ```rust
-    /// use tower_sessions::{MemoryStore, SessionManagerLayer};
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer};
     ///
     /// let session_store = MemoryStore::default();
     /// let session_service = SessionManagerLayer::new(session_store);
@@ -545,7 +545,7 @@ mod tests {
     use anyhow::anyhow;
     use axum::body::Body;
     use tower::{ServiceBuilder, ServiceExt};
-    use tower_sessions_memory_store::MemoryStore;
+    use tower_sessions_ext_memory_store::MemoryStore;
 
     use super::*;
     use crate::session::{Id, Record};

@@ -77,7 +77,7 @@ impl Session {
     /// ```rust
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// Session::new(None, store, None);
@@ -151,7 +151,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -188,7 +188,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -237,7 +237,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -270,7 +270,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -300,7 +300,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -336,7 +336,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -370,7 +370,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     ///
@@ -420,7 +420,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{session::Id, MemoryStore, Session};
+    /// use tower_sessions_ext::{session::Id, MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     ///
@@ -486,7 +486,7 @@ impl Session {
     /// ```rust
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{session::Id, MemoryStore, Session};
+    /// use tower_sessions_ext::{session::Id, MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     ///
@@ -508,7 +508,7 @@ impl Session {
     /// ```rust
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{session::Expiry, MemoryStore, Session};
+    /// use tower_sessions_ext::{session::Expiry, MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -530,7 +530,7 @@ impl Session {
     /// use std::sync::Arc;
     ///
     /// use time::OffsetDateTime;
-    /// use tower_sessions::{session::Expiry, MemoryStore, Session};
+    /// use tower_sessions_ext::{session::Expiry, MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -555,7 +555,7 @@ impl Session {
     /// use std::sync::Arc;
     ///
     /// use time::{Duration, OffsetDateTime};
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -587,7 +587,7 @@ impl Session {
     /// use std::sync::Arc;
     ///
     /// use time::Duration;
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -612,7 +612,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store, None);
@@ -645,7 +645,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session};
+    /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store.clone(), None);
@@ -694,7 +694,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{session::Id, MemoryStore, Session};
+    /// use tower_sessions_ext::{session::Id, MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let id = Some(Id::default());
@@ -734,7 +734,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{session::Id, MemoryStore, Session, SessionStore};
+    /// use tower_sessions_ext::{session::Id, MemoryStore, Session, SessionStore};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(Some(Id::default()), store.clone(), None);
@@ -772,7 +772,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{MemoryStore, Session, SessionStore};
+    /// use tower_sessions_ext::{MemoryStore, Session, SessionStore};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store.clone(), None);
@@ -812,7 +812,7 @@ impl Session {
     /// # tokio_test::block_on(async {
     /// use std::sync::Arc;
     ///
-    /// use tower_sessions::{session::Id, MemoryStore, Session};
+    /// use tower_sessions_ext::{session::Id, MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let session = Session::new(None, store.clone(), None);
@@ -868,7 +868,7 @@ impl Session {
 /// # Examples
 ///
 /// ```rust
-/// use tower_sessions::session::Id;
+/// use tower_sessions_ext::session::Id;
 ///
 /// Id::default();
 /// ```
@@ -936,7 +936,7 @@ impl Record {
 ///
 /// ```rust
 /// use time::{Duration, OffsetDateTime};
-/// use tower_sessions::Expiry;
+/// use tower_sessions_ext::Expiry;
 ///
 /// // Will be expired on "session end".
 /// let expiry = Expiry::OnSessionEnd;

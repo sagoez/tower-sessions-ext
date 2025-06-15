@@ -4,7 +4,7 @@ mod common;
 #[cfg(all(test, feature = "axum-core", feature = "memory-store"))]
 mod memory_store_tests {
     use axum::Router;
-    use tower_sessions::{MemoryStore, SessionManagerLayer};
+    use tower_sessions_ext::{MemoryStore, SessionManagerLayer};
 
     use crate::common::build_app;
 

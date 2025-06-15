@@ -87,11 +87,11 @@ Please note that `0.10.3` has been yanked in accordance with cargo guidelines.
 
 Session IDs are now represetned as base64-encoded `i128`s, boast 128 bits of entropy, and are shorter, saving network bandwidth and improving the secure nature of sessions.
 
-We no longer bundle session stores via feature flags and as such applications must be updated to require the stores directly. For example, applications that use the `tower-sessions-sqlx-store` should update their `Cargo.toml` like so:
+We no longer bundle session stores via feature flags and as such applications must be updated to require the stores directly. For example, applications that use the `tower-sessions-ext-sqlx-store` should update their `Cargo.toml` like so:
 
 ```toml
-tower-sessions = "0.10.0"
-tower-sessions-sqlx-store = { version = "0.10.0", features = ["sqlite"] }
+tower-sessions-ext = "0.10.0"
+tower-sessions-ext-sqlx-store = { version = "0.10.0", features = ["sqlite"] }
 ```
 
 Assuming a SQLite store, as an example.
@@ -104,8 +104,8 @@ use std::net::SocketAddr;
 use axum::{response::IntoResponse, routing::get, Router};
 use serde::{Deserialize, Serialize};
 use time::Duration;
-use tower_sessions::{session_store::ExpiredDeletion, Expiry, Session, SessionManagerLayer};
-use tower_sessions_sqlx_store::{sqlx::SqlitePool, SqliteStore};
+use tower_sessions_ext::{session_store::ExpiredDeletion, Expiry, Session, SessionManagerLayer};
+use tower_sessions_ext_sqlx_store::{sqlx::SqlitePool, SqliteStore};
 
 const COUNTER_KEY: &str = "counter";
 
@@ -215,7 +215,7 @@ This brings `tower-cookies` up-to-date which includes an update to the `cookies`
 
 - Use a default session name of "id" to avoid fingerprinting, as per https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#session-id-name-fingerprinting.
 
-Note that applications using the old default, "tower.sid", may continue to do so without disruption by specifying [`with_name("tower.sid")`](https://docs.rs/tower-sessions/latest/tower_sessions/service/struct.SessionManagerLayer.html#method.with_name).
+Note that applications using the old default, "tower.sid", may continue to do so without disruption by specifying [`with_name("tower.sid")`](https://docs.rs/tower-sessions-ext/latest/tower_sessions_ext/service/struct.SessionManagerLayer.html#method.with_name).
 
 # 0.4.3
 

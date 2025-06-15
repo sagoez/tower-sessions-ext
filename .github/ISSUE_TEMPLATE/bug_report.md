@@ -16,10 +16,10 @@ Please fill in as much of the template below as you're able.
 ### Version
 
 <!--
-List the versions of all `tower-sessions` crates you are using. The easiest way to get
+List the versions of all `tower-sessions-ext` crates you are using. The easiest way to get
 this information is using `cargo tree`:
 
-`cargo tree | grep tower-sessions`
+`cargo tree | grep tower-sessions-ext`
 -->
 
 ### Platform
@@ -31,7 +31,7 @@ Output of `uname -a` (UNIX), or version and 32 or 64-bit (Windows)
 ### Crates
 
 <!--
-If known, please specify the affected tower-sessions crates. Otherwise, delete this
+If known, please specify the affected tower-sessions-ext crates. Otherwise, delete this
 section.
 -->
 

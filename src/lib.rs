@@ -32,19 +32,7 @@
 //! That said, a number of session store implmentations already exist and may be
 //! useful starting points.
 //!
-//! | Crate                                                                                                            | Persistent | Description                                |
-//! | ---------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------ |
-//! | [`tower-sessions-dynamodb-store`](https://github.com/necrobious/tower-sessions-dynamodb-store)                   | Yes        | DynamoDB session store                     |
-//! | [`tower-sessions-file-store`](https://github.com/mousetail/tower-sessions-file-store)                            | Yes        | Local filesystem store                     |
-//! | [`tower-sessions-firestore-store`](https://github.com/AtTheTavern/tower-sessions-firestore-store)                | Yes        | Firestore session store                    |
-//! | [`tower-sessions-libsql-store`](https://github.com/daybowbow-dev/tower-sessions-libsql-store)                    | Yes        | libSQL session store                       |
-//! | [`tower-sessions-mongodb-store`](https://github.com/maxcountryman/tower-sessions-stores/tree/main/mongodb-store) | Yes        | MongoDB session store                      |
-//! | [`tower-sessions-moka-store`](https://github.com/maxcountryman/tower-sessions-stores/tree/main/moka-store)       | No         | Moka session store                         |
-//! | [`tower-sessions-redis-store`](https://github.com/maxcountryman/tower-sessions-stores/tree/main/redis-store)     | Yes        | Redis via `fred` session store             |
-//! | [`tower-sessions-rusqlite-store`](https://github.com/patte/tower-sessions-rusqlite-store)                        | Yes        | Rusqlite session store                     |
-//! | [`tower-sessions-sled-store`](https://github.com/Zatzou/tower-sessions-sled-store)                               | Yes        | Sled session store                         |
-//! | [`tower-sessions-sqlx-store`](https://github.com/maxcountryman/tower-sessions-stores/tree/main/sqlx-store)       | Yes        | SQLite, Postgres, and MySQL session stores |
-//! | [`tower-sessions-surrealdb-store`](https://github.com/rynoV/tower-sessions-surrealdb-store)                      | Yes        | SurrealDB session store                    |
+//! | [`tower-sessions-ext-sqlx-store`](https://github.com/sagoez/tower-sessions-ext/tree/main/sqlx-store)       | Yes        | SQLite, Postgres, and MySQL session stores |
 //!
 //! Have a store to add? Please open a PR adding it.
 //!
@@ -60,10 +48,10 @@
 //! ```rust,no_run
 //! use std::net::SocketAddr;
 //!
-//! use axum::{response::IntoResponse, routing::get, Router};
+//! use axum::{Router, response::IntoResponse, routing::get};
 //! use serde::{Deserialize, Serialize};
 //! use time::Duration;
-//! use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
+//! use tower_sessions_ext::{Expiry, MemoryStore, Session, SessionManagerLayer};
 //!
 //! const COUNTER_KEY: &str = "counter";
 //!
@@ -104,8 +92,8 @@
 //! the removal of expired sessions, maintaining your application's data
 //! integrity and performance.
 //! ```rust,no_run,ignore
-//! # use tower_sessions::{session_store::ExpiredDeletion};
-//! # use tower_sessions_sqlx_store::{sqlx::SqlitePool, SqliteStore};
+//! # use tower_sessions_ext::{session_store::ExpiredDeletion};
+//! # use tower_sessions_ext_sqlx_store::{sqlx::SqlitePool, SqliteStore};
 //! # tokio_test::block_on(async {
 //! let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
 //! let session_store = SqliteStore::new(pool);
@@ -130,7 +118,7 @@
 //! # use axum::extract::FromRequestParts;
 //! # use http::{request::Parts, StatusCode};
 //! # use serde::{Deserialize, Serialize};
-//! # use tower_sessions::{SessionStore, Session, MemoryStore};
+//! # use tower_sessions_ext::{SessionStore, Session, MemoryStore};
 //! const COUNTER_KEY: &str = "counter";
 //!
 //! #[derive(Default, Deserialize, Serialize)]
@@ -169,7 +157,7 @@
 //! # use http::{request::Parts, StatusCode};
 //! # use serde::{Deserialize, Serialize};
 //! # use time::OffsetDateTime;
-//! # use tower_sessions::{SessionStore, Session};
+//! # use tower_sessions_ext::{SessionStore, Session};
 //! #[derive(Clone, Deserialize, Serialize)]
 //! struct GuestData {
 //!     pageviews: usize,
@@ -284,9 +272,9 @@
 //! `PostgresStore` backend.
 //! ```rust,no_run,ignore
 //! # use tower::ServiceBuilder;
-//! # use tower_sessions::{CachingSessionStore, SessionManagerLayer};
-//! # use tower_sessions_sqlx_store::{sqlx::PgPool, PostgresStore};
-//! # use tower_sessions_moka_store::MokaStore;
+//! # use tower_sessions_ext::{CachingSessionStore, SessionManagerLayer};
+//! # use tower_sessions_ext_sqlx_store::{sqlx::PgPool, PostgresStore};
+//! # use tower_sessions_ext_moka_store::MokaStore;
 //! # use time::Duration;
 //! # tokio_test::block_on(async {
 //! let database_url = std::option_env!("DATABASE_URL").unwrap();
@@ -437,17 +425,21 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 pub use tower_cookies::cookie;
-pub use tower_sessions_core::{session, session_store};
+pub use tower_sessions_ext_core::{session, session_store};
 #[doc(inline)]
-pub use tower_sessions_core::{
+pub use tower_sessions_ext_core::{
     session::{Expiry, Session},
     session_store::{CachingSessionStore, ExpiredDeletion, SessionStore},
 };
 #[cfg(feature = "memory-store")]
 #[cfg_attr(docsrs, doc(cfg(feature = "memory-store")))]
 #[doc(inline)]
-pub use tower_sessions_memory_store::MemoryStore;
+pub use tower_sessions_ext_memory_store::MemoryStore;
 
-pub use crate::service::{SessionManager, SessionManagerLayer};
+#[cfg(feature = "private")]
+pub use crate::service::PrivateCookie;
+#[cfg(feature = "signed")]
+pub use crate::service::SignedCookie;
+pub use crate::service::{PlaintextCookie, SessionManager, SessionManagerLayer};
 
 pub mod service;

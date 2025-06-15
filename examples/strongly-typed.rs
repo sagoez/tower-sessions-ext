@@ -4,7 +4,7 @@ use axum::{extract::FromRequestParts, response::IntoResponse, routing::get, Rout
 use http::{request::Parts, StatusCode};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
-use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
+use tower_sessions_ext::{MemoryStore, Session, SessionManagerLayer};
 
 #[derive(Clone, Deserialize, Serialize)]
 struct GuestData {

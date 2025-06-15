@@ -4,7 +4,7 @@ use http::{header, HeaderMap};
 use http_body_util::BodyExt;
 use time::{Duration, OffsetDateTime};
 use tower_cookies::{cookie, Cookie};
-use tower_sessions::{Expiry, Session, SessionManagerLayer, SessionStore};
+use tower_sessions_ext::{Expiry, Session, SessionManagerLayer, SessionStore};
 
 fn routes() -> Router {
     Router::new()

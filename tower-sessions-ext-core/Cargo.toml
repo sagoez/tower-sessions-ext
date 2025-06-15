@@ -1,6 +1,6 @@
 [package]
-name = "tower-sessions-core"
-description = "Core types and traits for tower-sessions."
+name = "tower-sessions-ext-core"
+description = "Core types and traits for tower-sessions-ext."
 documentation.workspace = true
 version.workspace = true
 license.workspace = true
@@ -31,7 +31,7 @@ tokio = { workspace = true }
 tracing = { version = "0.1.40", features = ["log"] }
 
 [dev-dependencies]
-tower-sessions = { path = "../", features = ["memory-store"] }
+tower-sessions-ext = { path = "../", features = ["memory-store"] }
 tokio-test = "0.4.3"
 tokio = { workspace = true, features = ["rt", "macros"] }
 mockall = "0.13.0"

@@ -18,7 +18,7 @@
 //! use async_trait::async_trait;
 //! use time::OffsetDateTime;
 //! use tokio::sync::Mutex;
-//! use tower_sessions_core::{
+//! use tower_sessions_ext_core::{
 //!     session::{Id, Record},
 //!     session_store, SessionStore,
 //! };
@@ -163,9 +163,9 @@ async fn default_create<S: SessionStore + ?Sized>(
 ///
 /// ```rust,ignore
 /// # tokio_test::block_on(async {
-/// use tower_sessions::CachingSessionStore;
-/// use tower_sessions_moka_store::MokaStore;
-/// use tower_sessions_sqlx_store::{SqlitePool, SqliteStore};
+/// use tower_sessions_ext::CachingSessionStore;
+/// use tower_sessions_ext_moka_store::MokaStore;
+/// use tower_sessions_ext_sqlx_store::{SqlitePool, SqliteStore};
 /// let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
 /// let sqlite_store = SqliteStore::new(pool);
 /// let moka_store = MokaStore::new(Some(2_000));
@@ -262,8 +262,8 @@ where
     /// # Examples
     ///
     /// ```rust,no_run,ignore
-    /// use tower_sessions::session_store::ExpiredDeletion;
-    /// use tower_sessions_sqlx_store::{sqlx::SqlitePool, SqliteStore};
+    /// use tower_sessions_ext::session_store::ExpiredDeletion;
+    /// use tower_sessions_ext_sqlx_store::{sqlx::SqlitePool, SqliteStore};
     ///
     /// # {
     /// # tokio_test::block_on(async {

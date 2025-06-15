@@ -1,22 +1,22 @@
 [workspace]
-members = [".", "memory-store", "tower-sessions-core"]
+members = [".", "memory-store", "tower-sessions-ext-core"]
 resolver = "2"
 
 [workspace.package]
 version = "0.14.0"
-edition = "2021"
-authors = ["Max Countryman <hello@maxcountryman.com>"]
+edition = "2024"
+authors = ["Max Countryman <hello@maxcountryman.com>", "Samuel <swe@sagoez.com>"]
 license = "MIT"
-homepage = "https://github.com/maxcountryman/tower-sessions"
+homepage = "https://github.com/sagoez/tower-sessions-ext"
 keywords = ["axum", "session", "sessions", "cookie", "tower"]
 categories = ["asynchronous", "network-programming", "web-programming"]
-repository = "https://github.com/maxcountryman/tower-sessions"
-documentation = "https://docs.rs/tower-sessions"
+repository = "https://github.com/sagoez/tower-sessions-ext"
+documentation = "https://docs.rs/tower-sessions-ext"
 readme = "README.md"
 
 [package]
-name = "tower-sessions"
-description = "🥠 Sessions as a `tower` and `axum` middleware."
+name = "tower-sessions-ext"
+description = "A maintained fork of tower-sessions-ext, providing session middleware for tower and axum."
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -34,16 +34,16 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = ["axum-core", "memory-store"]
-axum-core = ["tower-sessions-core/axum-core"]
-memory-store = ["tower-sessions-memory-store"]
+axum-core = ["tower-sessions-ext-core/axum-core"]
+memory-store = ["tower-sessions-ext-memory-store"]
 signed = ["tower-cookies/signed"]
 private = ["tower-cookies/private"]
 
 [workspace.dependencies]
-tower-sessions = { version = "=0.14.0", path = ".", default-features = false }
+tower-sessions-ext = { version = "=0.14.0", path = ".", default-features = false }
 
-tower-sessions-core = { version = "=0.14.0", path = "tower-sessions-core", default-features = false }
-tower-sessions-memory-store = { version = "=0.14.0", path = "memory-store" }
+tower-sessions-ext-core = { version = "=0.14.0", path = "tower-sessions-ext-core", default-features = false }
+tower-sessions-ext-memory-store = { version = "=0.14.0", path = "memory-store" }
 
 async-trait = "0.1.74"
 parking_lot = { version = "0.12.1", features = ["serde"] }
@@ -59,8 +59,8 @@ http = "1.0"
 tokio = { version = "1.32.0", features = ["sync"] }
 tower-layer = "0.3.2"
 tower-service = "0.3.2"
-tower-sessions-core = { workspace = true }
-tower-sessions-memory-store = { workspace = true, optional = true }
+tower-sessions-ext-core = { workspace = true }
+tower-sessions-ext-memory-store = { workspace = true, optional = true }
 tracing = { version = "0.1.40", features = ["log"] }
 tower-cookies = "0.11.0"
 time = { version = "0.3.29", features = ["serde"] }
@@ -85,7 +85,7 @@ tokio = { version = "1.32.0", features = ["full"] }
 tokio-test = "0.4.3"
 tower = { version = "0.5.0", features = ["util"] }
 tower-cookies = "0.11.0"
-tower-sessions-core = { workspace = true, features = ["deletion-task"] }
+tower-sessions-ext-core = { workspace = true, features = ["deletion-task"] }
 
 [[example]]
 name = "counter"

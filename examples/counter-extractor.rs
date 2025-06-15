@@ -4,7 +4,7 @@ use axum::{extract::FromRequestParts, response::IntoResponse, routing::get, Rout
 use http::request::Parts;
 use serde::{Deserialize, Serialize};
 use time::Duration;
-use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
+use tower_sessions_ext::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
 const COUNTER_KEY: &str = "counter";
 

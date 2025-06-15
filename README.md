@@ -1,5 +1,5 @@
 <h1 align="center">
-    tower-sessions
+    tower-sessions-ext
 </h1>
 
 <p align="center">
@@ -7,17 +7,17 @@
 </p>
 
 <div align="center">
-    <a href="https://crates.io/crates/tower-sessions">
-        <img src="https://img.shields.io/crates/v/tower-sessions.svg" />
+    <a href="https://crates.io/crates/tower-sessions-ext">
+        <img src="https://img.shields.io/crates/v/tower-sessions-ext.svg" />
     </a>
-    <a href="https://docs.rs/tower-sessions">
-        <img src="https://docs.rs/tower-sessions/badge.svg" />
+    <a href="https://docs.rs/tower-sessions-ext">
+        <img src="https://docs.rs/tower-sessions-ext/badge.svg" />
     </a>
-    <a href="https://github.com/maxcountryman/tower-sessions/actions/workflows/rust.yml">
-        <img src="https://github.com/maxcountryman/tower-sessions/actions/workflows/rust.yml/badge.svg" />
+    <a href="https://github.com/maxcountryman/tower-sessions-ext/actions/workflows/rust.yml">
+        <img src="https://github.com/maxcountryman/tower-sessions-ext/actions/workflows/rust.yml/badge.svg" />
     </a>
-    <a href="https://codecov.io/gh/maxcountryman/tower-sessions" > 
-        <img src="https://codecov.io/gh/maxcountryman/tower-sessions/graph/badge.svg?token=74POF0TJDN"/> 
+    <a href="https://codecov.io/gh/maxcountryman/tower-sessions-ext" > 
+        <img src="https://codecov.io/gh/maxcountryman/tower-sessions-ext/graph/badge.svg?token=74POF0TJDN"/> 
     </a>
 </div>
 
@@ -58,24 +58,9 @@ useful starting points.
 
 | Crate                                                                                                            | Persistent | Description                                                 |
 | ---------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------- |
-| [`tower-sessions-dynamodb-store`](https://github.com/necrobious/tower-sessions-dynamodb-store)                   | Yes        | DynamoDB session store                                      |
-| [`tower-sessions-file-store`](https://github.com/mousetail/tower-sessions-file-store)                            | Yes        | Local filesystem store                     |
-| [`tower-sessions-firestore-store`](https://github.com/AtTheTavern/tower-sessions-firestore-store)                | Yes        | Firestore session store                                     |
-| [`tower-sessions-libsql-store`](https://github.com/daybowbow-dev/tower-sessions-libsql-store)                    | Yes        | libSQL session store                                        |
-| [`tower-sessions-mongodb-store`](https://github.com/maxcountryman/tower-sessions-stores/tree/main/mongodb-store) | Yes        | MongoDB session store                                       |
-| [`tower-sessions-moka-store`](https://github.com/maxcountryman/tower-sessions-stores/tree/main/moka-store)       | No         | Moka session store                                          |
-| [`tower-sessions-redis-store`](https://github.com/maxcountryman/tower-sessions-stores/tree/main/redis-store)     | Yes        | Redis via `fred` session store                              |
-| [`tower-sessions-rorm-store`](https://github.com/rorm-orm/tower-sessions-rorm-store)                             | Yes        | SQLite, Postgres and Mysql session store provided by `rorm` |
-| [`tower-sessions-rusqlite-store`](https://github.com/patte/tower-sessions-rusqlite-store)                        | Yes        | Rusqlite session store                                      |
-| [`tower-sessions-sled-store`](https://github.com/Zatzou/tower-sessions-sled-store)                               | Yes        | Sled session store                                          |
-| [`tower-sessions-sqlx-store`](https://github.com/maxcountryman/tower-sessions-stores/tree/main/sqlx-store)       | Yes        | SQLite, Postgres, and MySQL session stores                  |
-| [`tower-sessions-surrealdb-store`](https://github.com/rynoV/tower-sessions-surrealdb-store)                      | Yes        | SurrealDB session store                                     |
+| [`tower-sessions-ext-sqlx-store`](https://github.com/maxcountryman/tower-sessions-ext-stores/tree/main/sqlx-store)       | Yes        | SQLite, Postgres, and MySQL session stores                  |
 
 Have a store to add? Please open a PR adding it.
-
-### User session management
-
-To facilitate authentication and authorization, we've built [`axum-login`](https://github.com/maxcountryman/axum-login) on top of this crate. Please check it out if you're looking for a generalized auth solution.
 
 ## 📦 Install
 
@@ -83,7 +68,7 @@ To use the crate in your project, add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tower-sessions = "0.14.0"
+tower-sessions-ext = "0.14.0"
 ```
 
 ## 🤸 Usage
@@ -96,7 +81,7 @@ use std::net::SocketAddr;
 use axum::{response::IntoResponse, routing::get, Router};
 use serde::{Deserialize, Serialize};
 use time::Duration;
-use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
+use tower_sessions_ext::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
 const COUNTER_KEY: &str = "counter";
 
@@ -135,14 +120,10 @@ You can find this [example][counter-example] as well as other example projects i
 
 This crate uses `#![forbid(unsafe_code)]` to ensure everything is implemented in 100% safe Rust.
 
-## 🛟 Getting Help
-
-We've put together a number of [examples][examples] to help get you started. You're also welcome to [open a discussion](https://github.com/maxcountryman/tower-sessions/discussions/new?category=q-a) and ask additional questions you might have.
-
 ## 👯 Contributing
 
 We appreciate all kinds of contributions, thank you!
 
-[counter-example]: https://github.com/maxcountryman/tower-sessions/tree/main/examples/counter.rs
-[examples]: https://github.com/maxcountryman/tower-sessions/tree/main/examples
-[docs]: https://docs.rs/tower-sessions
+[counter-example]: https://github.com/sagoez/tower-sessions-ext/tree/main/examples/counter.rs
+[examples]: https://github.com/sagoez/tower-sessions-ext/tree/main/examples
+[docs]: https://docs.rs/tower-sessions-ext
