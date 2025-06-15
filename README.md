@@ -13,11 +13,11 @@
     <a href="https://docs.rs/tower-sessions-ext">
         <img src="https://docs.rs/tower-sessions-ext/badge.svg" />
     </a>
-    <a href="https://github.com/maxcountryman/tower-sessions-ext/actions/workflows/rust.yml">
-        <img src="https://github.com/maxcountryman/tower-sessions-ext/actions/workflows/rust.yml/badge.svg" />
+    <a href="https://github.com/sagoez/tower-sessions-ext/actions/workflows/rust.yml">
+        <img src="https://github.com/sagoez/tower-sessions-ext/actions/workflows/rust.yml/badge.svg" />
     </a>
-    <a href="https://codecov.io/gh/maxcountryman/tower-sessions-ext" > 
-        <img src="https://codecov.io/gh/maxcountryman/tower-sessions-ext/graph/badge.svg?token=74POF0TJDN"/> 
+    <a href="https://codecov.io/gh/sagoez/tower-sessions-ext" > 
+        <img src="https://codecov.io/gh/sagoez/tower-sessions-ext/graph/badge.svg?token=74POF0TJDN"/> 
     </a>
 </div>
 
@@ -46,6 +46,10 @@ It offers:
   top of this foundational key-value interface.
 
 This crate's session implementation is inspired by the [Django sessions middleware](https://docs.djangoproject.com/en/4.2/topics/http/sessions) and it provides a transliteration of those semantics.
+
+## 🔧 Maintenance
+
+This crate is a maintained fork of the original [`tower-sessions`](https://github.com/maxcountryman/tower-sessions) project. We extend our sincere gratitude to [Max Countryman](https://github.com/maxcountryman) and all the original contributors for their foundational work and excellent design that made this project possible.
 
 ### Session stores
 
