@@ -115,7 +115,8 @@ impl<'a> SessionConfig<'a> {
             Some(Expiry::AtDateTime(datetime)) => {
                 cookie_builder.max_age(datetime - OffsetDateTime::now_utc())
             }
-            Some(Expiry::OnSessionEnd) | None => cookie_builder,
+            Some(Expiry::OnSessionEnd(duration)) => cookie_builder.max_age(duration),
+            None => cookie_builder,
         };
 
         if let Some(domain) = self.domain {
@@ -545,6 +546,7 @@ mod tests {
     use anyhow::anyhow;
     use axum::body::Body;
     use tower::{ServiceBuilder, ServiceExt};
+    use tower_sessions_ext_core::session::DEFAULT_DURATION;
     use tower_sessions_ext_memory_store::MemoryStore;
 
     use super::*;
@@ -723,8 +725,8 @@ mod tests {
     #[tokio::test]
     async fn expiry_on_session_end_test() -> anyhow::Result<()> {
         let session_store = MemoryStore::default();
-        let session_layer =
-            SessionManagerLayer::new(session_store).with_expiry(Expiry::OnSessionEnd);
+        let session_layer = SessionManagerLayer::new(session_store)
+            .with_expiry(Expiry::OnSessionEnd(DEFAULT_DURATION));
         let svc = ServiceBuilder::new()
             .layer(session_layer)
             .service_fn(handler);
@@ -779,7 +781,7 @@ mod tests {
     async fn expiry_on_session_end_always_save_test() -> anyhow::Result<()> {
         let session_store = MemoryStore::default();
         let session_layer = SessionManagerLayer::new(session_store.clone())
-            .with_expiry(Expiry::OnSessionEnd)
+            .with_expiry(Expiry::OnSessionEnd(DEFAULT_DURATION))
             .with_always_save(true);
         let mut svc = ServiceBuilder::new()
             .layer(session_layer)

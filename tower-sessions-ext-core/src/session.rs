@@ -19,7 +19,7 @@ use tokio::sync::{MappedMutexGuard, Mutex, MutexGuard};
 
 use crate::{SessionStore, session_store};
 
-const DEFAULT_DURATION: Duration = Duration::weeks(2);
+pub const DEFAULT_DURATION: Duration = Duration::weeks(2);
 
 type Result<T> = result::Result<T, Error>;
 
@@ -573,9 +573,11 @@ impl Session {
                 OffsetDateTime::now_utc().saturating_add(duration)
             }
             Some(Expiry::AtDateTime(datetime)) => datetime,
-            Some(Expiry::OnSessionEnd) | None => {
-                OffsetDateTime::now_utc().saturating_add(DEFAULT_DURATION) // TODO: The default should probably be configurable.
-            }
+            Some(Expiry::OnSessionEnd(datetime)) => {
+                OffsetDateTime::now_utc().saturating_add(datetime)
+            },
+            None => 
+                OffsetDateTime::now_utc().saturating_add(DEFAULT_DURATION)
         }
     }
 
@@ -954,7 +956,7 @@ pub enum Expiry {
     /// browser.
     ///
     /// [current-session-end]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#removal_defining_the_lifetime_of_a_cookie
-    OnSessionEnd,
+    OnSessionEnd(Duration),
 
     /// Expire on inactivity.
     ///
