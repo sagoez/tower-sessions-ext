@@ -21,6 +21,10 @@ use crate::{SessionStore, session_store};
 
 pub const DEFAULT_DURATION: Duration = Duration::weeks(2);
 
+/// Callback invoked when a session is discovered to have expired (store returned `None` for a
+/// previously valid session id). Useful for cleanup (e.g. revoking tokens, logging out elsewhere).
+pub type OnExpireCallback = Arc<dyn Fn(Id) + Send + Sync>;
+
 type Result<T> = result::Result<T, Error>;
 
 type Data = HashMap<String, Value>;
@@ -60,10 +64,21 @@ struct Inner {
 
 /// A session which allows HTTP applications to associate key-value pairs with
 /// visitors.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Session {
     store: Arc<dyn SessionStore>,
     inner: Arc<Inner>,
+    on_expire: Option<OnExpireCallback>,
+}
+
+impl fmt::Debug for Session {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Session")
+            .field("store", &self.store)
+            .field("inner", &self.inner)
+            .field("on_expire", &self.on_expire.as_ref().map(|_| "Some(_)"))
+            .finish()
+    }
 }
 
 impl Session {
@@ -71,6 +86,9 @@ impl Session {
     ///
     /// This method is lazy and does not invoke the overhead of talking to the
     /// backing store.
+    ///
+    /// The optional `on_expire` callback is invoked when the store returns `None`
+    /// for a session id (e.g. session expired or was deleted).
     ///
     /// # Examples
     ///
@@ -80,12 +98,13 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// Session::new(None, store, None);
+    /// Session::new(None, store, None, None);
     /// ```
     pub fn new(
         session_id: Option<Id>,
         store: Arc<impl SessionStore>,
         expiry: Option<Expiry>,
+        on_expire: Option<OnExpireCallback>,
     ) -> Self {
         let inner = Inner {
             session_id: parking_lot::Mutex::new(session_id),
@@ -97,6 +116,7 @@ impl Session {
         Self {
             store,
             inner: Arc::new(inner),
+            on_expire,
         }
     }
 
@@ -105,7 +125,7 @@ impl Session {
     }
 
     #[tracing::instrument(skip(self), err, level = "trace")]
-    async fn get_record(&self) -> Result<MappedMutexGuard<Record>> {
+    async fn get_record(&'_ self) -> Result<MappedMutexGuard<'_, Record>> {
         let mut record_guard = self.inner.record.lock().await;
 
         // Lazily load the record since `None` here indicates we have no yet loaded it.
@@ -127,6 +147,9 @@ impl Session {
                         // be relatively uncommon and as such entering this branch could indicate
                         // malicious behavior.
                         tracing::warn!("possibly suspicious activity: record not found in store");
+                        if let Some(ref on_expire) = self.on_expire {
+                            on_expire(session_id);
+                        }
                         *self.inner.session_id.lock() = None;
                         self.create_record()
                     }
@@ -154,7 +177,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// session.insert("foo", 42).await.unwrap();
     ///
@@ -191,7 +214,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// let value = session
     ///     .insert_value("foo", serde_json::json!(42))
@@ -240,7 +263,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// session.insert("foo", 42).await.unwrap();
     ///
@@ -273,7 +296,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// session.insert("foo", 42).await.unwrap();
     ///
@@ -303,7 +326,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// session.insert("foo", 42).await.unwrap();
     ///
@@ -339,7 +362,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// session.insert("foo", 42).await.unwrap();
     /// let value = session.remove_value("foo").await.unwrap().unwrap();
@@ -374,7 +397,7 @@ impl Session {
     ///
     /// let store = Arc::new(MemoryStore::default());
     ///
-    /// let session = Session::new(None, store.clone(), None);
+    /// let session = Session::new(None, store.clone(), None, None);
     /// session.insert("foo", 42).await.unwrap();
     /// assert!(!session.is_empty().await);
     ///
@@ -388,11 +411,11 @@ impl Session {
     /// assert!(session.get::<usize>("foo").await.unwrap().is_none());
     ///
     /// // ...data is cleared before loading from the backend...
-    /// let session = Session::new(session.id(), store.clone(), None);
+    /// let session = Session::new(session.id(), store.clone(), None, None);
     /// session.clear().await;
     /// assert!(session.get::<usize>("foo").await.unwrap().is_none());
     ///
-    /// let session = Session::new(session.id(), store, None);
+    /// let session = Session::new(session.id(), store, None, None);
     /// // ...but data is not deleted from the store.
     /// assert_eq!(session.get::<usize>("foo").await.unwrap(), Some(42));
     /// # });
@@ -424,15 +447,15 @@ impl Session {
     ///
     /// let store = Arc::new(MemoryStore::default());
     ///
-    /// let session = Session::new(None, store.clone(), None);
+    /// let session = Session::new(None, store.clone(), None, None);
     /// // Empty if we have no ID and record is not loaded.
     /// assert!(session.is_empty().await);
     ///
-    /// let session = Session::new(Some(Id::default()), store.clone(), None);
+    /// let session = Session::new(Some(Id::default()), store.clone(), None, None);
     /// // Not empty if we have an ID but no record. (Record is not loaded here.)
     /// assert!(!session.is_empty().await);
     ///
-    /// let session = Session::new(Some(Id::default()), store.clone(), None);
+    /// let session = Session::new(Some(Id::default()), store.clone(), None, None);
     /// session.insert("foo", 42).await.unwrap();
     /// // Not empty after inserting.
     /// assert!(!session.is_empty().await);
@@ -440,7 +463,7 @@ impl Session {
     /// // Not empty after saving.
     /// assert!(!session.is_empty().await);
     ///
-    /// let session = Session::new(session.id(), store.clone(), None);
+    /// let session = Session::new(session.id(), store.clone(), None, None);
     /// session.load().await.unwrap();
     /// // Not empty after loading from store...
     /// assert!(!session.is_empty().await);
@@ -448,7 +471,7 @@ impl Session {
     /// session.get::<usize>("foo").await.unwrap();
     /// assert!(!session.is_empty().await);
     ///
-    /// let session = Session::new(session.id(), store.clone(), None);
+    /// let session = Session::new(session.id(), store.clone(), None, None);
     /// session.delete().await.unwrap();
     /// // Not empty after deleting from store...
     /// assert!(!session.is_empty().await);
@@ -456,7 +479,7 @@ impl Session {
     /// // ...but empty after trying to access the deleted session.
     /// assert!(session.is_empty().await);
     ///
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     /// session.insert("foo", 42).await.unwrap();
     /// session.flush().await.unwrap();
     /// // Empty after flushing.
@@ -490,11 +513,11 @@ impl Session {
     ///
     /// let store = Arc::new(MemoryStore::default());
     ///
-    /// let session = Session::new(None, store.clone(), None);
+    /// let session = Session::new(None, store.clone(), None, None);
     /// assert!(session.id().is_none());
     ///
     /// let id = Some(Id::default());
-    /// let session = Session::new(id, store, None);
+    /// let session = Session::new(id, store, None, None);
     /// assert_eq!(id, session.id());
     /// ```
     pub fn id(&self) -> Option<Id> {
@@ -511,7 +534,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session, session::Expiry};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// assert_eq!(session.expiry(), None);
     /// ```
@@ -533,7 +556,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session, session::Expiry};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// let expiry = Expiry::AtDateTime(OffsetDateTime::now_utc());
     /// session.set_expiry(Some(expiry));
@@ -558,7 +581,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// // Our default duration is two weeks.
     /// let expected_expiry = OffsetDateTime::now_utc().saturating_add(Duration::weeks(2));
@@ -592,7 +615,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// let expected_duration = Duration::weeks(2);
     ///
@@ -617,7 +640,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store, None);
+    /// let session = Session::new(None, store, None, None);
     ///
     /// // Not modified initially.
     /// assert!(!session.is_modified());
@@ -650,12 +673,12 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store.clone(), None);
+    /// let session = Session::new(None, store.clone(), None, None);
     ///
     /// session.insert("foo", 42).await.unwrap();
     /// session.save().await.unwrap();
     ///
-    /// let session = Session::new(session.id(), store, None);
+    /// let session = Session::new(session.id(), store, None, None);
     /// assert_eq!(session.get::<usize>("foo").await.unwrap().unwrap(), 42);
     /// # });
     /// ```
@@ -700,12 +723,12 @@ impl Session {
     ///
     /// let store = Arc::new(MemoryStore::default());
     /// let id = Some(Id::default());
-    /// let session = Session::new(id, store.clone(), None);
+    /// let session = Session::new(id, store.clone(), None, None);
     ///
     /// session.insert("foo", 42).await.unwrap();
     /// session.save().await.unwrap();
     ///
-    /// let session = Session::new(session.id(), store, None);
+    /// let session = Session::new(session.id(), store, None, None);
     /// session.load().await.unwrap();
     ///
     /// assert_eq!(session.get::<usize>("foo").await.unwrap().unwrap(), 42);
@@ -739,7 +762,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session, SessionStore, session::Id};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(Some(Id::default()), store.clone(), None);
+    /// let session = Session::new(Some(Id::default()), store.clone(), None, None);
     ///
     /// // Save before deleting.
     /// session.save().await.unwrap();
@@ -777,7 +800,7 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session, SessionStore};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store.clone(), None);
+    /// let session = Session::new(None, store.clone(), None, None);
     ///
     /// session.insert("foo", "bar").await.unwrap();
     /// session.save().await.unwrap();
@@ -817,13 +840,13 @@ impl Session {
     /// use tower_sessions_ext::{MemoryStore, Session, session::Id};
     ///
     /// let store = Arc::new(MemoryStore::default());
-    /// let session = Session::new(None, store.clone(), None);
+    /// let session = Session::new(None, store.clone(), None, None);
     ///
     /// session.insert("foo", 42).await.unwrap();
     /// session.save().await.unwrap();
     /// let id = session.id();
     ///
-    /// let session = Session::new(session.id(), store.clone(), None);
+    /// let session = Session::new(session.id(), store.clone(), None, None);
     /// session.cycle_id().await.unwrap();
     ///
     /// assert!(!session.is_empty().await);
@@ -831,7 +854,7 @@ impl Session {
     ///
     /// session.save().await.unwrap();
     ///
-    /// let session = Session::new(session.id(), store, None);
+    /// let session = Session::new(session.id(), store, None, None);
     ///
     /// assert_ne!(id, session.id());
     /// assert_eq!(session.get::<usize>("foo").await.unwrap().unwrap(), 42);
@@ -1033,7 +1056,7 @@ mod tests {
             });
 
         let store = Arc::new(mock_store);
-        let session = Session::new(Some(initial_id), store.clone(), None);
+        let session = Session::new(Some(initial_id), store.clone(), None, None);
 
         // Insert some data and save the session
         session.insert("foo", 42).await.unwrap();

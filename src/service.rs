@@ -1,6 +1,7 @@
 //! A middleware that provides [`Session`] as a request extension.
 use std::{
     borrow::Cow,
+    fmt,
     future::Future,
     pin::Pin,
     sync::Arc,
@@ -18,7 +19,7 @@ use tracing::Instrument;
 
 use crate::{
     Session, SessionStore,
-    session::{self, Expiry},
+    session::{self, Expiry, OnExpireCallback},
 };
 
 #[doc(hidden)]
@@ -90,7 +91,7 @@ impl CookieController for PrivateCookie {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 struct SessionConfig<'a> {
     name: Cow<'a, str>,
     http_only: bool,
@@ -100,6 +101,23 @@ struct SessionConfig<'a> {
     path: Cow<'a, str>,
     domain: Option<Cow<'a, str>>,
     always_save: bool,
+    on_expire: Option<OnExpireCallback>,
+}
+
+impl fmt::Debug for SessionConfig<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SessionConfig")
+            .field("name", &self.name)
+            .field("http_only", &self.http_only)
+            .field("same_site", &self.same_site)
+            .field("expiry", &self.expiry)
+            .field("secure", &self.secure)
+            .field("path", &self.path)
+            .field("domain", &self.domain)
+            .field("always_save", &self.always_save)
+            .field("on_expire", &self.on_expire.as_ref().map(|_| "Some(_)"))
+            .finish()
+    }
 }
 
 impl<'a> SessionConfig<'a> {
@@ -115,8 +133,8 @@ impl<'a> SessionConfig<'a> {
             Some(Expiry::AtDateTime(datetime)) => {
                 cookie_builder.max_age(datetime - OffsetDateTime::now_utc())
             }
-            Some(Expiry::OnSessionEnd(duration)) => cookie_builder.max_age(duration),
-            None => cookie_builder,
+            // Session cookie: no Max-Age so the browser treats it as ending when the session ends.
+            Some(Expiry::OnSessionEnd(_)) | None => cookie_builder,
         };
 
         if let Some(domain) = self.domain {
@@ -138,6 +156,7 @@ impl Default for SessionConfig<'_> {
             path: "/".into(),
             domain: None,
             always_save: false,
+            on_expire: None,
         }
     }
 }
@@ -217,7 +236,12 @@ where
                         .ok()
                 });
 
-                let session = Session::new(session_id, session_store, session_config.expiry);
+                let session = Session::new(
+                    session_id,
+                    session_store,
+                    session_config.expiry,
+                    session_config.on_expire.clone(),
+                );
 
                 req.extensions_mut().insert(session.clone());
 
@@ -445,6 +469,36 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// ```
     pub fn with_always_save(mut self, always_save: bool) -> Self {
         self.session_config.always_save = always_save;
+        self
+    }
+
+    /// Registers a callback that is invoked when a session is discovered to have expired.
+    ///
+    /// The callback runs when the store returns `None` for a session id that was sent by the
+    /// client (e.g. the session was removed by a background cleanup or expired). Use this for
+    /// cleanup such as revoking tokens or logging out the user in other systems.
+    ///
+    /// The callback is invoked synchronously during request handling; for heavy work consider
+    /// spawning a task from within the callback.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use std::sync::Arc;
+    ///
+    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer};
+    ///
+    /// let session_store = MemoryStore::default();
+    /// let session_service = SessionManagerLayer::new(session_store)
+    ///     .with_on_expire(|session_id| {
+    ///         tracing::info!(%session_id, "session expired");
+    ///     });
+    /// ```
+    pub fn with_on_expire<F>(mut self, f: F) -> Self
+    where
+        F: Fn(session::Id) + Send + Sync + 'static,
+    {
+        self.session_config.on_expire = Some(Arc::new(f));
         self
     }
 
