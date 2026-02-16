@@ -245,19 +245,20 @@ pub trait ExpiredDeletion: SessionStore
 where
     Self: Sized,
 {
-    /// A method for deleting expired sessions from the store.
-    async fn delete_expired(&self) -> Result<()>;
+    /// Deletes expired sessions from the store, returning their full records.
+    async fn delete_expired(&self) -> Result<Vec<Record>>;
 
-    /// This function will keep running indefinitely, deleting expired rows and
-    /// then waiting for the specified period before deleting again.
+    /// Runs indefinitely, deleting expired sessions on each tick.
+    /// After each deletion round, invokes `on_deleted` with the full
+    /// records of sessions that were just removed.
     ///
     /// Generally this will be used as a task, for example via
     /// `tokio::task::spawn`.
     ///
     /// # Errors
     ///
-    /// This function returns a `Result` that contains an error of type
-    /// `sqlx::Error` if the deletion operation fails.
+    /// This function returns a `Result` that contains an error if the
+    /// deletion operation fails.
     ///
     /// # Examples
     ///
@@ -273,18 +274,25 @@ where
     /// tokio::task::spawn(
     ///     session_store
     ///         .clone()
-    ///         .continuously_delete_expired(tokio::time::Duration::from_secs(60)),
+    ///         .continuously_delete_expired(tokio::time::Duration::from_secs(60), |_records| {}),
     /// );
     /// # })
     /// ```
     #[cfg(feature = "deletion-task")]
     #[cfg_attr(docsrs, doc(cfg(feature = "deletion-task")))]
-    async fn continuously_delete_expired(self, period: tokio::time::Duration) -> Result<()> {
+    async fn continuously_delete_expired(
+        self,
+        period: tokio::time::Duration,
+        on_deleted: impl Fn(Vec<Record>) + Send + Sync + 'static,
+    ) -> Result<()> {
         let mut interval = tokio::time::interval(period);
         interval.tick().await; // The first tick completes immediately; skip.
         loop {
             interval.tick().await;
-            self.delete_expired().await?;
+            let deleted = self.delete_expired().await?;
+            if !deleted.is_empty() {
+                on_deleted(deleted);
+            }
         }
     }
 }

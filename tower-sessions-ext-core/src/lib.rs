@@ -1,6 +1,6 @@
 #[doc(inline)]
 pub use self::{
-    session::{Expiry, OnExpireCallback, Session},
+    session::{Expiry, Session},
     session_store::{CachingSessionStore, ExpiredDeletion, SessionStore},
 };
 

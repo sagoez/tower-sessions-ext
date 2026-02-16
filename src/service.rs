@@ -19,7 +19,7 @@ use tracing::Instrument;
 
 use crate::{
     Session, SessionStore,
-    session::{self, Expiry, OnExpireCallback},
+    session::{self, Expiry},
 };
 
 #[doc(hidden)]
@@ -101,7 +101,6 @@ struct SessionConfig<'a> {
     path: Cow<'a, str>,
     domain: Option<Cow<'a, str>>,
     always_save: bool,
-    on_expire: Option<OnExpireCallback>,
 }
 
 impl fmt::Debug for SessionConfig<'_> {
@@ -115,7 +114,6 @@ impl fmt::Debug for SessionConfig<'_> {
             .field("path", &self.path)
             .field("domain", &self.domain)
             .field("always_save", &self.always_save)
-            .field("on_expire", &self.on_expire.as_ref().map(|_| "Some(_)"))
             .finish()
     }
 }
@@ -156,7 +154,6 @@ impl Default for SessionConfig<'_> {
             path: "/".into(),
             domain: None,
             always_save: false,
-            on_expire: None,
         }
     }
 }
@@ -240,7 +237,6 @@ where
                     session_id,
                     session_store,
                     session_config.expiry,
-                    session_config.on_expire.clone(),
                 );
 
                 req.extensions_mut().insert(session.clone());
@@ -469,36 +465,6 @@ impl<Store: SessionStore, C: CookieController> SessionManagerLayer<Store, C> {
     /// ```
     pub fn with_always_save(mut self, always_save: bool) -> Self {
         self.session_config.always_save = always_save;
-        self
-    }
-
-    /// Registers a callback that is invoked when a session is discovered to have expired.
-    ///
-    /// The callback runs when the store returns `None` for a session id that was sent by the
-    /// client (e.g. the session was removed by a background cleanup or expired). Use this for
-    /// cleanup such as revoking tokens or logging out the user in other systems.
-    ///
-    /// The callback is invoked synchronously during request handling; for heavy work consider
-    /// spawning a task from within the callback.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use std::sync::Arc;
-    ///
-    /// use tower_sessions_ext::{MemoryStore, SessionManagerLayer};
-    ///
-    /// let session_store = MemoryStore::default();
-    /// let session_service = SessionManagerLayer::new(session_store)
-    ///     .with_on_expire(|session_id| {
-    ///         tracing::info!(%session_id, "session expired");
-    ///     });
-    /// ```
-    pub fn with_on_expire<F>(mut self, f: F) -> Self
-    where
-        F: Fn(session::Id) + Send + Sync + 'static,
-    {
-        self.session_config.on_expire = Some(Arc::new(f));
         self
     }
 

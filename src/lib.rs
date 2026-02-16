@@ -100,7 +100,7 @@
 //! let deletion_task = tokio::task::spawn(
 //!     session_store
 //!         .clone()
-//!         .continuously_delete_expired(tokio::time::Duration::from_secs(60)),
+//!         .continuously_delete_expired(tokio::time::Duration::from_secs(60), |_records| {}),
 //! );
 //! deletion_task.await.unwrap().unwrap();
 //! # });
@@ -428,7 +428,7 @@ pub use tower_cookies::cookie;
 pub use tower_sessions_ext_core::{session, session_store};
 #[doc(inline)]
 pub use tower_sessions_ext_core::{
-    session::{Expiry, OnExpireCallback, Session},
+    session::{Expiry, Session},
     session_store::{CachingSessionStore, ExpiredDeletion, SessionStore},
 };
 #[cfg(feature = "memory-store")]
