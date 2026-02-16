@@ -4,8 +4,9 @@ use async_trait::async_trait;
 use time::OffsetDateTime;
 use tokio::sync::Mutex;
 use tower_sessions_ext_core::{
+    SessionStore,
     session::{Id, Record},
-    session_store, SessionStore,
+    session_store,
 };
 
 /// A session store that lives only in memory.

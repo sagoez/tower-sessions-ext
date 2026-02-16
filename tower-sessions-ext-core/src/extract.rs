@@ -1,5 +1,5 @@
 use axum_core::extract::FromRequestParts;
-use http::{request::Parts, StatusCode};
+use http::{StatusCode, request::Parts};
 
 use crate::session::Session;
 

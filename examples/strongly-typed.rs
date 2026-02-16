@@ -1,7 +1,7 @@
 use std::{fmt, net::SocketAddr};
 
-use axum::{extract::FromRequestParts, response::IntoResponse, routing::get, Router};
-use http::{request::Parts, StatusCode};
+use axum::{Router, extract::FromRequestParts, response::IntoResponse, routing::get};
+use http::{StatusCode, request::Parts};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use tower_sessions_ext::{MemoryStore, Session, SessionManagerLayer};

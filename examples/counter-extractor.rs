@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use axum::{extract::FromRequestParts, response::IntoResponse, routing::get, Router};
+use axum::{Router, extract::FromRequestParts, response::IntoResponse, routing::get};
 use http::request::Parts;
 use serde::{Deserialize, Serialize};
 use time::Duration;

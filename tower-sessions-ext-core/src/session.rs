@@ -584,9 +584,8 @@ impl Session {
             Some(Expiry::AtDateTime(datetime)) => datetime,
             Some(Expiry::OnSessionEnd(datetime)) => {
                 OffsetDateTime::now_utc().saturating_add(datetime)
-            },
-            None => 
-                OffsetDateTime::now_utc().saturating_add(DEFAULT_DURATION)
+            }
+            None => OffsetDateTime::now_utc().saturating_add(DEFAULT_DURATION),
         }
     }
 

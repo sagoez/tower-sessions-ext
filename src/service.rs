@@ -233,11 +233,7 @@ where
                         .ok()
                 });
 
-                let session = Session::new(
-                    session_id,
-                    session_store,
-                    session_config.expiry,
-                );
+                let session = Session::new(session_id, session_store, session_config.expiry);
 
                 req.extensions_mut().insert(session.clone());
 

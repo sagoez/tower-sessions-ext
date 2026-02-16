@@ -1,10 +1,12 @@
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 use axum_core::body::Body;
-use http::{header, HeaderMap};
+use http::{HeaderMap, header};
 use http_body_util::BodyExt;
 use time::{Duration, OffsetDateTime};
-use tower_cookies::{cookie, Cookie};
-use tower_sessions_ext::{session::DEFAULT_DURATION, Expiry, Session, SessionManagerLayer, SessionStore};
+use tower_cookies::{Cookie, cookie};
+use tower_sessions_ext::{
+    Expiry, Session, SessionManagerLayer, SessionStore, session::DEFAULT_DURATION,
+};
 
 fn routes() -> Router {
     Router::new()
@@ -101,10 +103,10 @@ pub fn get_session_cookie(headers: &HeaderMap) -> Result<Cookie<'_>, cookie::Par
 macro_rules! route_tests {
     ($create_app:expr) => {
         use axum::body::Body;
-        use http::{header, Request, StatusCode};
+        use http::{Request, StatusCode, header};
         use time::Duration;
         use tower::ServiceExt;
-        use tower_cookies::{cookie::SameSite, Cookie};
+        use tower_cookies::{Cookie, cookie::SameSite};
         use $crate::common::{body_string, get_session_cookie};
 
         #[tokio::test]
@@ -116,12 +118,13 @@ macro_rules! route_tests {
                 .await
                 .unwrap();
 
-            assert!(res
-                .headers()
-                .get_all(header::SET_COOKIE)
-                .iter()
-                .next()
-                .is_none());
+            assert!(
+                res.headers()
+                    .get_all(header::SET_COOKIE)
+                    .iter()
+                    .next()
+                    .is_none()
+            );
         }
 
         #[tokio::test]
@@ -178,9 +181,11 @@ macro_rules! route_tests {
             assert_eq!(session_cookie.name(), "id");
             assert_eq!(session_cookie.http_only(), Some(true));
             assert_eq!(session_cookie.same_site(), Some(SameSite::Strict));
-            assert!(session_cookie
-                .max_age()
-                .is_some_and(|dt| dt <= Duration::hours(1)));
+            assert!(
+                session_cookie
+                    .max_age()
+                    .is_some_and(|dt| dt <= Duration::hours(1))
+            );
             assert_eq!(session_cookie.secure(), Some(true));
             assert_eq!(session_cookie.path(), Some("/"));
         }

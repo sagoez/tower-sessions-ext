@@ -19,8 +19,9 @@
 //! use time::OffsetDateTime;
 //! use tokio::sync::Mutex;
 //! use tower_sessions_ext_core::{
+//!     SessionStore,
 //!     session::{Id, Record},
-//!     session_store, SessionStore,
+//!     session_store,
 //! };
 //!
 //! #[derive(Clone, Debug, Default)]
@@ -274,24 +275,27 @@ where
     /// tokio::task::spawn(
     ///     session_store
     ///         .clone()
-    ///         .continuously_delete_expired(tokio::time::Duration::from_secs(60), |_records| {}),
+    ///         .continuously_delete_expired(tokio::time::Duration::from_secs(60), |_records| async {}),
     /// );
     /// # })
     /// ```
     #[cfg(feature = "deletion-task")]
     #[cfg_attr(docsrs, doc(cfg(feature = "deletion-task")))]
-    async fn continuously_delete_expired(
+    async fn continuously_delete_expired<Fut>(
         self,
         period: tokio::time::Duration,
-        on_deleted: impl Fn(Vec<Record>) + Send + Sync + 'static,
-    ) -> Result<()> {
+        on_deleted: impl Fn(Vec<Record>) -> Fut + Send + Sync + 'static,
+    ) -> Result<()>
+    where
+        Fut: std::future::Future<Output = ()> + Send,
+    {
         let mut interval = tokio::time::interval(period);
         interval.tick().await; // The first tick completes immediately; skip.
         loop {
             interval.tick().await;
             let deleted = self.delete_expired().await?;
             if !deleted.is_empty() {
-                on_deleted(deleted);
+                on_deleted(deleted).await;
             }
         }
     }

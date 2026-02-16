@@ -1,9 +1,9 @@
 use std::net::SocketAddr;
 
-use axum::{response::IntoResponse, routing::get, Router};
+use axum::{Router, response::IntoResponse, routing::get};
 use serde::{Deserialize, Serialize};
 use time::Duration;
-use tower_sessions_ext::{cookie::Key, Expiry, MemoryStore, Session, SessionManagerLayer};
+use tower_sessions_ext::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::Key};
 
 const COUNTER_KEY: &str = "counter";
 
@@ -19,7 +19,7 @@ async fn handler(session: Session) -> impl IntoResponse {
 #[tokio::main]
 async fn main() {
     let key = Key::generate(); // This is only used for demonstration purposes; provide a proper
-                               // cryptographic key in a real application.
+    // cryptographic key in a real application.
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
