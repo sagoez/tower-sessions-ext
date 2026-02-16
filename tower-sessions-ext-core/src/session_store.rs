@@ -275,20 +275,24 @@ where
     /// tokio::task::spawn(
     ///     session_store
     ///         .clone()
-    ///         .continuously_delete_expired(tokio::time::Duration::from_secs(60), |_records| async {}),
+    ///         .continuously_delete_expired(tokio::time::Duration::from_secs(60), |_records| {
+    ///             Box::pin(async {})
+    ///         }),
     /// );
     /// # })
     /// ```
     #[cfg(feature = "deletion-task")]
     #[cfg_attr(docsrs, doc(cfg(feature = "deletion-task")))]
-    async fn continuously_delete_expired<Fut>(
+    async fn continuously_delete_expired(
         self,
         period: tokio::time::Duration,
-        on_deleted: impl Fn(Vec<Record>) -> Fut + Send + Sync + 'static,
-    ) -> Result<()>
-    where
-        Fut: std::future::Future<Output = ()> + Send,
-    {
+        on_deleted: impl Fn(
+            Vec<Record>,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>>
+        + Send
+        + Sync
+        + 'static,
+    ) -> Result<()> {
         let mut interval = tokio::time::interval(period);
         interval.tick().await; // The first tick completes immediately; skip.
         loop {

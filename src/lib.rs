@@ -100,7 +100,7 @@
 //! let deletion_task = tokio::task::spawn(
 //!     session_store
 //!         .clone()
-//!         .continuously_delete_expired(tokio::time::Duration::from_secs(60), |_records| async {}),
+//!         .continuously_delete_expired(tokio::time::Duration::from_secs(60), |_records| Box::pin(async {})),
 //! );
 //! deletion_task.await.unwrap().unwrap();
 //! # });
